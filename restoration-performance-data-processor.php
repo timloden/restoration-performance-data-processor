@@ -12,6 +12,13 @@
  * @package         Restoration_Performance_Data_Processor
  */
 
+require 'plugin-update-checker/plugin-update-checker.php';
+$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+	'https://github.com/timloden/restoration-performance-data-processor',
+	__FILE__,
+	'restoration-performance-data-processor'
+);
+
 require_once("vendor/autoload.php");
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
