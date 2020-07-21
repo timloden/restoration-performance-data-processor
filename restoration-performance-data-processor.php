@@ -19,6 +19,8 @@ $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
 	'restoration-performance-data-processor'
 );
 
+$myUpdateChecker->getVcsApi()->enableReleaseAssets();
+
 require_once("vendor/autoload.php");
 
 $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
