@@ -23,12 +23,37 @@ $myUpdateChecker->getVcsApi()->enableReleaseAssets();
 
 require_once("vendor/autoload.php");
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
 use League\Csv\Reader;
 use League\Csv\Writer;
 use League\Csv\CannotInsertRecord;
+
+use Carbon_Fields\Container;
+use Carbon_Fields\Field;
+
+// Admin Page
+
+function dbi_load_carbon_fields() {
+    \Carbon_Fields\Carbon_Fields::boot();
+}
+add_action( 'after_setup_theme', 'dbi_load_carbon_fields' );
+
+function dbi_add_plugin_settings_page() {
+    Container::make( 'theme_options', __( 'RP Data Sources' ) )
+        ->set_page_parent( 'options-general.php' )
+        ->add_fields( array(
+            Field::make( 'separator', 'crb_general_separator', __( 'General FTP' ) ),
+            Field::make( 'text', 'general_host', 'General Hostname' ),
+            Field::make( 'text', 'general_user', 'General Username' ),
+            Field::make( 'text', 'general_pass', 'General Password' ),
+            Field::make( 'separator', 'crb_goodmark_separator', __( 'Goodmark FTP' ) ),
+            Field::make( 'text', 'goodmark_host', 'Goodmark Hostname' ),
+            Field::make( 'text', 'goodmark_user', 'Goodmark Username' ),
+            Field::make( 'text', 'goodmark_pass', 'Goodmark Password' ),
+        ) );
+}
+add_action( 'carbon_fields_register_fields', 'dbi_add_plugin_settings_page' );
+
+// WP CLI Commands
 
 class RP_CLI {
 
@@ -41,14 +66,9 @@ class RP_CLI {
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/oer/';
 
-        // ftp 
-        // $ftp_server = "ds8874.dreamservers.com";
-        // $ftp_user_name = "rpc_uploads";
-        // $ftp_user_pass = "s3R-tjhM";
-
-        $ftp_server = $_ENV['GENERAL_SERVER'];
-        $ftp_user_name = $_ENV['GENERAL_SERVER_USERNAME'];
-        $ftp_user_pass = $_ENV['GENERAL_SERVER_PASSWORD'];
+        $ftp_server = get_option( '_general_host' );
+        $ftp_user_name = get_option( '_general_user' );
+        $ftp_user_pass = get_option( '_general_pass' );
 
         // set up basic connection
         $conn_id = ftp_connect($ftp_server);
