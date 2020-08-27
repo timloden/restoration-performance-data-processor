@@ -190,6 +190,74 @@ class RP_CLI {
         ftp_close($conn_id);
     }
 
+    public function process_goodmark() {
+        
+        $uploads = wp_upload_dir();
+        $dir = $uploads['basedir'] . '/vendors/goodmark/';
+        $pre_processed_file = $dir . 'goodmark-temp.csv';    
+        
+        // get file
+        $reader = Reader::createFromPath($pre_processed_file, 'r');
+
+        // set delimiter
+        $reader->setDelimiter('|');
+
+        // ignore header row
+        $reader->setHeaderOffset(0);
+
+        // get all the existing records
+        $records = $reader->getRecords();
+
+        $processed_file = $dir . 'goodmark-processed.csv';
+
+        // add our writer for output
+        $writer = Writer::createFromPath($processed_file, 'w+');
+
+        // add our header
+        $writer->insertOne(['PartNumber', 'CustomerPrice', 'QuantityAvailable']);
+
+        foreach ($records as $offset => $record) {
+
+            $sku = $record['PartNumber'];
+            // remove asterisks from part number
+            $sku = preg_replace('/[\*]+/', '', $sku);
+            
+            $cost = $record['CustomerPrice'];
+            $stock = $record['QuantityAvailable'];
+
+            // add part to new csv
+            $writer->insertOne([$sku, $cost, $stock]);
+        }
+
+        $lines = array();
+
+        // open the processed csv file
+        if (($handle = fopen($processed_file, "r")) !== false) {
+            // read each line into an array
+            while (($data = fgetcsv($handle, 8192, ",")) !== false) {
+                // build a "line" from the parsed data
+                $line = join(",", $data);
+
+                // if the line has been seen, skip it
+                if (isset($lines[$line])) continue;
+
+                // save the line
+                $lines[$line] = true;
+            }
+            fclose($handle);
+        }
+
+        // build the new content-data
+        $contents = '';
+        foreach ($lines as $line => $bool) $contents .= $line . "\r\n";
+
+        $finished_file = 'goodmark-inventory-update.csv';
+
+        // save it to a new file
+        file_put_contents("$dir/$finished_file", $contents);
+        
+        WP_CLI::success( 'Successfully created ' . $finished_file );
+    }
     
 
 }
