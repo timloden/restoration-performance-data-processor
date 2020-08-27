@@ -258,6 +258,57 @@ class RP_CLI {
         
         WP_CLI::success( 'Successfully created ' . $finished_file );
     }
+
+    // RPUI
+
+    public function download_rpui() {
+
+        $date = new DateTime();
+        $today = $date->format('mdY');
+        
+        $date->add(DateInterval::createFromDateString('yesterday'));
+        $yesterday = $date->format('mdY');
+        
+        // define our files
+        $local_file = 'rpui-temp.csv';
+
+        $server_file = 'InventoryRPUI' . $today . '.csv';
+        $yesterday_server_file = 'InventoryRPUI' . $yesterday . '.csv';
+
+        $uploads = wp_upload_dir();
+        $dir = $uploads['basedir'] . '/vendors/rpui/';
+
+        $ftp_server = get_option( '_general_host' );
+        $ftp_user_name = get_option( '_general_user' );
+        $ftp_user_pass = get_option( '_general_pass' );
+
+        // set up basic connection
+        $conn_id = ftp_connect($ftp_server);
+
+        // login with username and password
+        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+        ftp_pasv($conn_id, true);
+
+        // try to download $server_file and save to $local_file
+        if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
+            // echo "Successfully written to $local_file\n";
+            WP_CLI::line( 'Downloading...' );
+            WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
+
+            WP_CLI::line( 'Deleting yesterdays file...' );
+            if (ftp_delete($conn_id, $yesterday_server_file)) {
+                WP_CLI::success( 'Successfully deleted ' . $yesterday_server_file );
+               } else {
+                WP_CLI::error( 'Could not delete ' . $yesterday_server_file );
+            }
+
+        } else {
+            WP_CLI::error( 'There was a problem downloading RPUI feed file' );
+        }
+
+        // close the connection
+        ftp_close($conn_id);
+    }
     
 
 }
