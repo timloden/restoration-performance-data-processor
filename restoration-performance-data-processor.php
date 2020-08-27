@@ -309,6 +309,73 @@ class RP_CLI {
         // close the connection
         ftp_close($conn_id);
     }
+
+    public function process_rpui() {
+        
+        $uploads = wp_upload_dir();
+        $dir = $uploads['basedir'] . '/vendors/rpui/';
+        $pre_processed_file = $dir . 'rpui-temp.csv';    
+        
+        // get file
+        $reader = Reader::createFromPath($pre_processed_file, 'r');
+
+        // ignore header row
+        $reader->setHeaderOffset(0);
+
+        // get all the existing records
+        $records = $reader->getRecords();
+
+        $processed_file = $dir . 'rpui-processed.csv';
+
+        // add our writer for output
+        $writer = Writer::createFromPath($processed_file, 'w+');
+
+        // add our header
+        $writer->insertOne(['Brand', 'PartNumber', 'QuantityAvailable']);
+
+        foreach ($records as $offset => $record) {
+
+            $brand = $record['brand'];
+            
+            $sku = $record['sku'];
+            // remove asterisks from part number
+            $sku = preg_replace('/[\*]+/', '', $sku);
+    
+            $stock = $record['qty'];
+
+            // add part to new csv
+            $writer->insertOne([$brand, $sku, $stock]);
+        }
+
+        $lines = array();
+
+        // open the processed csv file
+        if (($handle = fopen($processed_file, "r")) !== false) {
+            // read each line into an array
+            while (($data = fgetcsv($handle, 8192, ",")) !== false) {
+                // build a "line" from the parsed data
+                $line = join(",", $data);
+
+                // if the line has been seen, skip it
+                if (isset($lines[$line])) continue;
+
+                // save the line
+                $lines[$line] = true;
+            }
+            fclose($handle);
+        }
+
+        // build the new content-data
+        $contents = '';
+        foreach ($lines as $line => $bool) $contents .= $line . "\r\n";
+
+        $finished_file = 'rpui-inventory-update.csv';
+
+        // save it to a new file
+        file_put_contents("$dir/$finished_file", $contents);
+        
+        WP_CLI::success( 'Successfully created ' . $finished_file );
+    }
     
 
 }
