@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.0.0
+ * Version:         1.1.0
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -29,6 +29,8 @@ use League\Csv\CannotInsertRecord;
 
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
+
+use KubAT\PhpSimple\HtmlDomParser;
 
 // Admin Page
 
@@ -376,7 +378,6 @@ class RP_CLI {
         
         WP_CLI::success( 'Successfully created ' . $finished_file );
     }
-    
 
 }
 

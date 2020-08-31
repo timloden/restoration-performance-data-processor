@@ -3,6 +3,7 @@
     },
     "require": {
         "league/csv": "^9.6",
-        "htmlburger/carbon-fields": "^3.1"
+        "htmlburger/carbon-fields": "^3.1",
+        "kub-at/php-simple-html-dom-parser": "^1.9"
     }
 }
