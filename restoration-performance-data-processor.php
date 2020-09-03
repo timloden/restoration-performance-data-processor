@@ -264,8 +264,8 @@ class RP_CLI {
     // RPUI
 
     public function download_rpui() {
-
-        $date = new DateTime();
+        $pst = new DateTimeZone('America/Los_Angeles');
+        $date = new DateTime('today', $pst);
         $today = $date->format('mdY');
         
         $date->add(DateInterval::createFromDateString('yesterday'));
