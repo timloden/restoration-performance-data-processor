@@ -59,6 +59,37 @@ add_action( 'carbon_fields_register_fields', 'dbi_add_plugin_settings_page' );
 
 class RP_CLI {
 
+    public function download_existing_oer() {
+        
+        $uploads = wp_upload_dir();
+        $dir = $uploads['basedir'] . '/vendors/oer/';
+
+         // Initialize a file URL to the variable 
+         $url = 'http://classicbodyparts.local/wp-load.php?security_token=b92b6e6510037153&export_id=15&action=get_data'; 
+        
+         $fremote = fopen($url, 'rb');
+         if (!$fremote) {
+            WP_CLI::error( 'There was a problem opening the export url' );
+            return false;
+        }
+
+        $flocal = fopen($dir . 'oer-existing.csv', 'wb');
+        if (!$flocal) {
+            fclose($fremote);
+            WP_CLI::error( 'There was a problem opening local' );
+            return false;
+        }
+
+        while ($buffer = fread($fremote, 1024)) {
+            fwrite($flocal, $buffer);
+        }
+
+        WP_CLI::success( 'Successfully written to ' . $dir );
+    
+        fclose($flocal);
+        fclose($fremote);
+    }
+
 	public function download_oer() {
         
         // define our files
