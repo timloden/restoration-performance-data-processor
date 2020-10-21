@@ -129,14 +129,20 @@ class RP_CLI {
         $dir = $uploads['basedir'] . '/vendors/oer/';
         $pre_processed_file = $dir . 'oer-temp.csv';    
         
-        // get file
+        // file downloaded from download_existing_oer()
+        $existing_file = $dir . 'oer-existing.csv';   
+        
+        // get files
         $reader = Reader::createFromPath($pre_processed_file, 'r');
+        $existing_reader = Reader::createFromPath($existing_file, 'r');
 
-        // ignore header row
+        // ignore header rows
         $reader->setHeaderOffset(0);
+        $existing_reader->setHeaderOffset(0);
 
         // get all the existing records
         $records = $reader->getRecords();
+        $existing_records = $existing_reader->getRecords();
 
         $processed_file = $dir . 'oer-processed.csv';
 
@@ -146,11 +152,18 @@ class RP_CLI {
         // add our header
         $writer->insertOne(['PartNumber', 'Cost', 'AvailableQty']);
 
+        // array used to compare feed sku vs on site sku
+        $current_products = [];
+
+        // loop through the OER feed
         foreach ($records as $offset => $record) {
 
             $sku = $record['PartNumber'];
+
             // remove asterisks from part number
             $sku = preg_replace('/[\*]+/', '', $sku);
+
+            array_push( $current_products, $sku );
             
             $cost = $record['Cost'];
             $stock = $record['AvailableQty'];
@@ -158,6 +171,23 @@ class RP_CLI {
             // add part to new csv
             $writer->insertOne([$sku, $cost, $stock]);
         }
+
+        // loop through our existing products feed
+        foreach ($existing_records as $offset => $existing_record) {
+
+            $sku = $existing_record['SKU'];
+
+            // remove -OER from sku
+            $sku = str_replace('-OER', '', $sku);
+            $cost = 0;
+            $stock = 0;
+
+            if (!in_array($sku, $current_products)) {
+                 // add part to new csv
+                $writer->insertOne([$sku, $cost, $stock]);
+            }
+        }
+
 
         $lines = array();
 
