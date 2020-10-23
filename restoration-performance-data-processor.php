@@ -461,6 +461,41 @@ class RP_CLI {
         WP_CLI::success( 'Successfully created ' . $finished_file );
     }
 
+    // Sherman
+
+    public function download_sherman() {
+        
+        // define our files
+        $local_file = 'sherman-temp.csv';
+        $server_file = 'Meyer Inventory.csv';
+
+        $uploads = wp_upload_dir();
+        $dir = $uploads['basedir'] . '/vendors/sherman/';
+
+        $ftp_server = get_option( '_general_host' );
+        $ftp_user_name = get_option( '_general_user' );
+        $ftp_user_pass = get_option( '_general_pass' );
+
+        // set up basic connection
+        $conn_id = ftp_connect($ftp_server);
+
+        // login with username and password
+        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+        ftp_pasv($conn_id, true);
+
+        // try to download $server_file and save to $local_file
+        if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
+            // echo "Successfully written to $local_file\n";
+            WP_CLI::line( 'Downloading...' );
+            WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
+        } else {
+            WP_CLI::error( 'There was a problem' );
+        }
+
+        // close the connection
+        ftp_close($conn_id);
+    }
+
 }
 
 function rp_cli_register_commands() {
