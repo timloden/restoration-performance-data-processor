@@ -132,27 +132,36 @@ class RP_CLI {
     }
     
     public function process_oer() {
+
+        $export_url = get_option( '_oer_export' );
         
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/oer/';
         $pre_processed_file = $dir . 'oer-temp.csv';    
         
-        // file downloaded from download_existing_oer()
-        $existing_file = $dir . 'oer-existing.csv';   
-        
         // get files
         $reader = Reader::createFromPath($pre_processed_file, 'r');
-        $existing_reader = Reader::createFromPath($existing_file, 'r');
 
         // ignore header rows
         $reader->setHeaderOffset(0);
-        $existing_reader->setHeaderOffset(0);
-
+       
         // get all the existing records
         $records = $reader->getRecords();
-        $existing_records = $existing_reader->getRecords();
 
         $processed_file = $dir . 'oer-processed.csv';
+
+
+         // file downloaded from download_existing_oer()
+
+        if ($export_url) { 
+         
+            $existing_file = $dir . 'oer-existing.csv'; 
+            $existing_reader = Reader::createFromPath($existing_file, 'r');
+            $existing_reader->setHeaderOffset(0);
+            $existing_records = $existing_reader->getRecords();
+
+        }
+
 
         // add our writer for output
         $writer = Writer::createFromPath($processed_file, 'w+');
@@ -180,20 +189,24 @@ class RP_CLI {
             $writer->insertOne([$sku, $cost, $stock]);
         }
 
-        // loop through our existing products feed
-        foreach ($existing_records as $offset => $existing_record) {
+        if ($export_url) { 
 
-            $sku = $existing_record['SKU'];
+            // loop through our existing products feed
+            foreach ($existing_records as $offset => $existing_record) {
 
-            // remove -OER from sku
-            $sku = str_replace('-OER', '', $sku);
-            $cost = 0;
-            $stock = 0;
+                $sku = $existing_record['SKU'];
 
-            if (!in_array($sku, $current_products)) {
-                 // add part to new csv
-                $writer->insertOne([$sku, $cost, $stock]);
+                // remove -OER from sku
+                $sku = str_replace('-OER', '', $sku);
+                $cost = 0;
+                $stock = 0;
+
+                if (!in_array($sku, $current_products)) {
+                    // add part to new csv
+                    $writer->insertOne([$sku, $cost, $stock]);
+                }
             }
+
         }
 
 
