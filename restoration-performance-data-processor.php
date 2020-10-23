@@ -496,6 +496,72 @@ class RP_CLI {
         ftp_close($conn_id);
     }
 
+    public function process_sherman() {
+        
+        $uploads = wp_upload_dir();
+        $dir = $uploads['basedir'] . '/vendors/sherman/';
+        $pre_processed_file = $dir . 'sherman-temp.csv';    
+        
+        // get file
+        $reader = Reader::createFromPath($pre_processed_file, 'r');
+
+        // ignore header row
+        $reader->setHeaderOffset(0);
+
+        // get all the existing records
+        $records = $reader->getRecords();
+
+        $processed_file = $dir . 'sherman-processed.csv';
+
+        // add our writer for output
+        $writer = Writer::createFromPath($processed_file, 'w+');
+
+        // add our header
+        $writer->insertOne(['PartNumber', 'QuantityAvailable']);
+
+        foreach ($records as $offset => $record) {
+            $brand = $record['MFGName'];
+            
+            if ($brand == 'Sherman Parts') {
+                $sku = $record['MFG Item Number'];
+                $stock = $record['Available'];
+    
+                // add part to new csv
+                $writer->insertOne([$sku, $stock]);
+            }
+            
+        }
+
+        $lines = array();
+
+        // open the processed csv file
+        if (($handle = fopen($processed_file, "r")) !== false) {
+            // read each line into an array
+            while (($data = fgetcsv($handle, 8192, ",")) !== false) {
+                // build a "line" from the parsed data
+                $line = join(",", $data);
+
+                // if the line has been seen, skip it
+                if (isset($lines[$line])) continue;
+
+                // save the line
+                $lines[$line] = true;
+            }
+            fclose($handle);
+        }
+
+        // build the new content-data
+        $contents = '';
+        foreach ($lines as $line => $bool) $contents .= $line . "\r\n";
+
+        $finished_file = 'sherman-inventory-update.csv';
+
+        // save it to a new file
+        file_put_contents("$dir/$finished_file", $contents);
+        
+        WP_CLI::success( 'Successfully created ' . $finished_file );
+    }
+
 }
 
 function rp_cli_register_commands() {
