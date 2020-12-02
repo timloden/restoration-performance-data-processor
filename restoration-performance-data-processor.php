@@ -54,6 +54,7 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'text', 'goodmark_pass', 'Goodmark Password' ),
             Field::make( 'separator', 'crb_oer_separator', __( 'OER' ) ),
             Field::make( 'text', 'oer_export', 'OER Export URL' ),
+            Field::make( 'text', 'goodmark_export', 'Goodmark Export URL' ),
         ) );
 }
 add_action( 'carbon_fields_register_fields', 'dbi_add_plugin_settings_page' );
@@ -295,6 +296,45 @@ class RP_CLI {
         WP_CLI::success( 'Successfully created ' . $finished_file );
     }
 
+    // Goodmark
+
+
+    public function download_existing_goodmark() {
+        $export_url = get_option( '_goodmark_export' );
+        
+        if ($export_url) {
+            $uploads = wp_upload_dir();
+            $dir = $uploads['basedir'] . '/vendors/goodmark/';
+
+            // Initialize a file URL to the variable 
+            $url = $export_url; 
+            
+            $fremote = fopen($url, 'rb');
+            if (!$fremote) {
+                WP_CLI::error( 'There was a problem opening the export url' );
+                return false;
+            }
+
+            $flocal = fopen($dir . 'goodmark-existing.csv', 'wb');
+            if (!$flocal) {
+                fclose($fremote);
+                WP_CLI::error( 'There was a problem opening local' );
+                return false;
+            }
+
+            while ($buffer = fread($fremote, 1024)) {
+                fwrite($flocal, $buffer);
+            }
+
+            WP_CLI::success( 'Successfully written to ' . $dir );
+        
+            fclose($flocal);
+            fclose($fremote);
+        } else {
+            WP_CLI::error( 'No export URL provided' );
+        }
+        
+    }
 
     public function download_goodmark() {
         
@@ -333,7 +373,17 @@ class RP_CLI {
         
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/goodmark/';
-        $pre_processed_file = $dir . 'goodmark-temp.csv';    
+        $pre_processed_file = $dir . 'goodmark-temp.csv'; 
+        $export_url = get_option( '_goodmark_export' );   
+
+        if ($export_url) { 
+         
+            $existing_file = $dir . 'goodmark-existing.csv'; 
+            $existing_reader = Reader::createFromPath($existing_file, 'r');
+            $existing_reader->setHeaderOffset(0);
+            $existing_records = $existing_reader->getRecords();
+
+        }
         
         // get file
         $reader = Reader::createFromPath($pre_processed_file, 'r');
@@ -355,17 +405,40 @@ class RP_CLI {
         // add our header
         $writer->insertOne(['PartNumber', 'CustomerPrice', 'QuantityAvailable']);
 
+        // array used to compare feed sku vs on site sku
+        $current_products = [];
+
         foreach ($records as $offset => $record) {
 
             $sku = $record['PartNumber'];
             // remove asterisks from part number
             $sku = preg_replace('/[\*]+/', '', $sku);
+
+            array_push( $current_products, $sku );
             
             $cost = $record['CustomerPrice'];
             $stock = $record['QuantityAvailable'];
+            
 
             // add part to new csv
             $writer->insertOne([$sku, $cost, $stock]);
+        }
+        
+        if ($export_url) { 
+
+            // loop through our existing products feed
+            foreach ($existing_records as $offset => $existing_record) {
+
+                $sku = $existing_record['SKU'];
+                $cost = 0;
+                $stock = 0;
+
+                if (!in_array($sku, $current_products)) {
+                    // add part to new csv
+                    $writer->insertOne([$sku, $cost, $stock]);
+                }
+            }
+
         }
 
         $lines = array();
