@@ -624,12 +624,39 @@ class RP_CLI {
         ftp_close($conn_id);
     }
 
+   
+
     public function process_sherman() {
+
         
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/sherman/';
         $pre_processed_file = $dir . 'sherman-temp.csv';    
-        
+
+        // temp pricing file
+        $pricing_file = $dir . 'sherman-pricing.csv';
+
+        $current_products = ['sku', 'price'];
+
+        // process pricing file
+        if ($pricing_file) { 
+
+            //$current_products = array_map('str_getcsv', file($pricing_file));
+         
+            $pricing_reader = Reader::createFromPath($pricing_file, 'r');
+            $pricing_reader->setHeaderOffset(0);
+            $pricing_records = $pricing_reader->getRecords();
+
+            foreach ($pricing_records as $offset => $pricing_record) {
+                
+                $sku = $pricing_record['SKU'];
+                $price = $pricing_record['PRICE'];
+
+                $current_products += array($sku => $price);
+            }
+
+        }
+
         // get file
         $reader = Reader::createFromPath($pre_processed_file, 'r');
 
@@ -645,17 +672,25 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['PartNumber', 'QuantityAvailable']);
+        $writer->insertOne(['PartNumber', 'QuantityAvailable','price']);
+
+        
 
         foreach ($records as $offset => $record) {
             $brand = $record['MFGName'];
             
+
             if ($brand == 'Sherman Parts') {
+
                 $sku = $record['MFG Item Number'];
                 $stock = $record['Available'];
-    
-                // add part to new csv
-                $writer->insertOne([$sku, $stock]);
+
+                if (array_key_exists($sku, $current_products)) {
+                    $writer->insertOne([$sku, $stock, $current_products[$sku]]);
+                }
+
+                
+                
             }
             
         }
