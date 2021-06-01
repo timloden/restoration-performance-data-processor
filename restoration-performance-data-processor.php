@@ -158,7 +158,7 @@ class RP_CLI {
         
         // define our files
         $local_file = 'oer-temp.csv';
-        $server_file = 'Restoration_Performance.csv';
+        $server_file = 'RPC.csv';
 
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/oer/';
