@@ -54,6 +54,7 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'text', 'goodmark_pass', 'Goodmark Password' ),
             Field::make( 'separator', 'crb_oer_separator', __( 'OER' ) ),
             Field::make( 'text', 'oer_export', 'OER Export URL' ),
+            Field::make( 'text', 'oer_file_name', 'OER File Name' ),
             Field::make( 'text', 'goodmark_export', 'Goodmark Export URL' ),
         ) );
 }
@@ -158,7 +159,8 @@ class RP_CLI {
         
         // define our files
         $local_file = 'oer-temp.csv';
-        $server_file = 'RPC.csv';
+        //$server_file = 'RPC.csv';
+        $server_file = get_option( '_oer_file_name' );
 
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/oer/';
