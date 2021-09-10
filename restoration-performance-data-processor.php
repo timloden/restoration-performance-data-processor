@@ -64,6 +64,44 @@ add_action( 'carbon_fields_register_fields', 'dbi_add_plugin_settings_page' );
 
 class RP_CLI {
 
+    public function get_backorders() {
+        //WP_CLI::line( 'give us backorders' );
+        
+        $orders = wc_get_orders(array(
+            'limit'=>-1,
+            'type'=> 'shop_order',
+            'status'=> array( 'wc-on-backorder'),
+            )
+        );
+
+        $body = get_bloginfo( 'name' ) . ' - ' . date("m/d/Y") . '<br><br>';
+
+        foreach ( $orders as $order ) {
+
+            $body .= 'PO #' . $order->get_id() . '<br>';
+            foreach ( $order->get_items() as $item_id => $item ) {
+                
+                $product = $item->get_product();
+                if ($product) {
+                    $sku = $product->get_sku();
+                    //$name = $product->get_name();
+                    $stock_status = $product->get_stock_status();
+    
+                    $body .= $sku . ' | ' . $stock_status  . '<br>';
+                }
+            }
+            $body .= '-----------------------------------------<br><br>';
+        }
+
+        //WP_CLI::line( $body );
+
+        $to = 'tloden@restorationperformance.com';
+        $subject = get_bloginfo( 'name' ) . ' Backorders - ' . date("m/d/Y");
+        $headers = array('Content-Type: text/html; charset=UTF-8');
+
+        wp_mail( $to, $subject, $body, $headers );
+    }
+
     // Dynacorn
 
     public function download_dynacorn() {
