@@ -95,7 +95,7 @@ class RP_CLI {
 
         //WP_CLI::line( $body );
 
-        $to = 'tloden@restorationperformance.com';
+        $to = 'tloden@restorationperformance.com,jlawson@restorationperformance.com,mlawson@restorationperformance.com';
         $subject = get_bloginfo( 'name' ) . ' Backorders - ' . date("m/d/Y");
         $headers = array('Content-Type: text/html; charset=UTF-8');
 
