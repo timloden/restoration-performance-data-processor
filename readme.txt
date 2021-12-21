@@ -68,6 +68,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 == Changelog ==
 
+= 1.7.0 =
+* Added OER weight calculation for updating OS
+
 = 1.2.0 =
 * Added a field for OER product export path
 * Added command to download OER export

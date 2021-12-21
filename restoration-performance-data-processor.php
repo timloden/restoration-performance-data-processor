@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.7.0
+ * Version:         1.8.0
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -263,11 +263,11 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['PartNumber', 'Cost', 'AvailableQty']);
+        $writer->insertOne(['PartNumber', 'Cost', 'AvailableQty', 'Weight', 'Shipping Class']);
 
         // array used to compare feed sku vs on site sku
         $current_products = [];
-
+        
         // loop through the OER feed
         foreach ($records as $offset => $record) {
 
@@ -277,12 +277,30 @@ class RP_CLI {
             $sku = preg_replace('/[\*]+/', '', $sku);
 
             array_push( $current_products, $sku );
+
+            $weight = $record['WeightLbs'];
+            $shipping_class = $record['ShipType'];
+            
+            if ($shipping_class == 'Truck') {
+                $weight = 1000;
+            } elseif ($shipping_class == 'Oversize') {
+                $weight = 30;
+            } elseif ($shipping_class == 'Oversize-2') {
+                $weight = 70;
+            } elseif ($shipping_class == 'Overweight' && $weight < 90) {
+                $weight = 90;
+            }
+
+            if ($weight == 0) {
+                $weight = 1;
+            }
             
             $cost = $record['Cost'];
             $stock = $record['AvailableQty'];
 
             // add part to new csv
-            $writer->insertOne([$sku, $cost, $stock]);
+            $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class]);
+            
         }
 
         if ($export_url) { 
