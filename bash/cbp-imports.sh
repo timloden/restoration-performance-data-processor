@@ -1,4 +1,5 @@
 #!/bin/bash
+#this script is added to root and not used via plugin
 
 #run oer import
 echo "Running OER import..." ;
