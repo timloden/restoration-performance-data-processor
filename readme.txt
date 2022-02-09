@@ -68,6 +68,10 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 
 == Changelog ==
 
+= 1.9.0 =
+* Updated OER and Goodmark to use actual stock status instead of quantity number
+* Added RP and CBP multiple import scripts
+
 = 1.8.0 =
 * Added OER weight calculation for updating OS
 
