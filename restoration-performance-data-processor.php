@@ -296,7 +296,12 @@ class RP_CLI {
             }
             
             $cost = $record['Cost'];
-            $stock = $record['AvailableQty'];
+            //$stock = $record['AvailableQty'];
+            $stock = 'onbackorder';
+
+            if ($record['AvailableQty'] >= 1) {
+                $stock = 'instock';
+            }
 
             // add part to new csv
             $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class]);
@@ -313,7 +318,7 @@ class RP_CLI {
                 // remove -OER from sku
                 $sku = str_replace('-OER', '', $sku);
                 $cost = 0;
-                $stock = 0;
+                $stock = 'outofstock';
 
                 if (!in_array($sku, $current_products)) {
                     // add part to new csv
