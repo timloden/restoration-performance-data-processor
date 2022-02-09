@@ -296,7 +296,7 @@ class RP_CLI {
             }
             
             $cost = $record['Cost'];
-            //$stock = $record['AvailableQty'];
+
             $stock = 'onbackorder';
 
             if ($record['AvailableQty'] >= 1) {
@@ -480,7 +480,12 @@ class RP_CLI {
             array_push( $current_products, $sku );
             
             $cost = $record['CustomerPrice'];
-            $stock = $record['QuantityAvailable'];
+
+            $stock = 'onbackorder';
+
+            if ($record['QuantityAvailable'] >= 1) {
+                $stock = 'instock';
+            }
             
 
             // add part to new csv
@@ -494,7 +499,7 @@ class RP_CLI {
 
                 $sku = $existing_record['SKU'];
                 $cost = 0;
-                $stock = 0;
+                $stock = 'outofstock';
 
                 if (!in_array($sku, $current_products)) {
                     // add part to new csv
