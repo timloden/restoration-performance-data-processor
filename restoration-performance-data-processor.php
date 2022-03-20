@@ -287,6 +287,8 @@ class RP_CLI {
                 $weight = 30;
             } elseif ($shipping_class == 'Oversize-2') {
                 $weight = 70;
+            } elseif ($shipping_class == 'Oversize-3') {
+                $weight = 90;
             } elseif ($shipping_class == 'Overweight' && $weight < 90) {
                 $weight = 90;
             }
