@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.9.1
+ * Version:         1.9.2
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -288,7 +288,7 @@ class RP_CLI {
             } elseif ($shipping_class == 'Oversize-2') {
                 $weight = 70;
             } elseif ($shipping_class == 'Oversize-3') {
-                $weight = 90;
+                $weight = 50;
             } elseif ($shipping_class == 'Overweight' && $weight < 90) {
                 $weight = 90;
             }
