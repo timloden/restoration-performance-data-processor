@@ -67,6 +67,8 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.9.3 =
+* Added condition for penny shipping wheels to set them to 50lbs
 
 = 1.9.2 =
 * Updated OER OS3 to 50lbs
