@@ -296,6 +296,11 @@ class RP_CLI {
             if ($weight == 0) {
                 $weight = 1;
             }
+
+            // oer penny shipping for wheels
+            if ($weight >= 100 && $shipping_class == 'Standard') {
+                $weight = 50;
+            } 
             
             $cost = $record['Cost'];
 
