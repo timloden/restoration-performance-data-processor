@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.9.3
+ * Version:         1.9.4
  *
  * @package         Restoration_Performance_Data_Processor
  */
