@@ -282,7 +282,7 @@ class RP_CLI {
             $shipping_class = $record['ShipType'];
             
             if ($shipping_class == 'Truck') {
-                $weight = 1000;
+                $weight = $weight;
             } elseif ($shipping_class == 'Oversize') {
                 $weight = 30;
             } elseif ($shipping_class == 'Oversize-2') {
