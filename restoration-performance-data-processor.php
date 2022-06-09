@@ -263,7 +263,7 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['PartNumber', 'Cost', 'AvailableQty', 'Weight', 'Shipping Class']);
+        $writer->insertOne(['PartNumber', 'Cost', 'AvailableQty', 'Weight', 'Shipping Class', 'Brand', 'Quantity']);
 
         // array used to compare feed sku vs on site sku
         $current_products = [];
@@ -304,6 +304,10 @@ class RP_CLI {
             
             $cost = $record['Cost'];
 
+            $brand = $record['Brand'];
+
+            $quantity = $record['AvailableQty'];
+
             $stock = 'onbackorder';
 
             if ($record['AvailableQty'] >= 1) {
@@ -311,7 +315,7 @@ class RP_CLI {
             }
 
             // add part to new csv
-            $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class]);
+            $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class, $brand, $quantity]);
             
         }
 
