@@ -282,7 +282,10 @@ class RP_CLI {
             $shipping_class = $record['ShipType'];
             $shipping_class_output = 'ground';
             
-            if ($shipping_class == 'Truck') {
+            if ($shipping_class == 'Truck' && $record['ProductHeight'] > 70) {
+                $shipping_class_output = 'heavy-freight';
+
+            } elseif ($shipping_class == 'Truck') {
                 $weight = $weight;
                 $shipping_class_output = 'oer-freight';
 
@@ -301,6 +304,7 @@ class RP_CLI {
             } elseif ($shipping_class == 'Overweight' && $weight < 90) {
                 $weight = 90;
                 $shipping_class_output = 'ground-oversized';
+                
             }
 
             if ($weight == 0) {
