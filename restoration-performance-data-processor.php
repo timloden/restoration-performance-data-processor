@@ -280,17 +280,27 @@ class RP_CLI {
 
             $weight = $record['WeightLbs'];
             $shipping_class = $record['ShipType'];
+            $shipping_class_output = 'ground';
             
             if ($shipping_class == 'Truck') {
                 $weight = $weight;
+                $shipping_class_output = 'oer-freight';
+
             } elseif ($shipping_class == 'Oversize') {
                 $weight = 30;
+                $shipping_class_output = 'ground-oversized';
+
             } elseif ($shipping_class == 'Oversize-2') {
                 $weight = 70;
+                $shipping_class_output = 'ground-oversized';
+
             } elseif ($shipping_class == 'Oversize-3') {
                 $weight = 50;
+                $shipping_class_output = 'ground-oversized';
+
             } elseif ($shipping_class == 'Overweight' && $weight < 90) {
                 $weight = 90;
+                $shipping_class_output = 'ground-oversized';
             }
 
             if ($weight == 0) {
@@ -317,7 +327,7 @@ class RP_CLI {
             }
 
             // add part to new csv
-            $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class, $brand, $quantity, $retail]);
+            $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class_output, $brand, $quantity, $retail]);
             
         }
 
