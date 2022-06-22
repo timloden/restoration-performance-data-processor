@@ -67,6 +67,10 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.9.7 =
+* Added shipping class output to OER
+* Added heavy freight class for freight items over 70 inches in length
+
 = 1.9.3 =
 * Added condition for penny shipping wheels to set them to 50lbs
 
