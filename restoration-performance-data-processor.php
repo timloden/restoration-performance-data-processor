@@ -48,11 +48,6 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'text', 'general_host', 'General Hostname' ),
             Field::make( 'text', 'general_user', 'General Username' ),
             Field::make( 'text', 'general_pass', 'General Password' ),
-            Field::make( 'separator', 'crb_goodmark_separator', __( 'Goodmark FTP' ) ),
-            Field::make( 'text', 'goodmark_host', 'Goodmark Hostname' ),
-            Field::make( 'text', 'goodmark_user', 'Goodmark Username' ),
-            Field::make( 'text', 'goodmark_pass', 'Goodmark Password' ),
-            Field::make( 'text', 'goodmark_export', 'Goodmark Export URL' ),
             Field::make( 'separator', 'crb_oer_separator', __( 'OER' ) ),
             Field::make( 'text', 'oer_export', 'OER Export URL' ),
             Field::make( 'text', 'oer_file_name', 'OER File Name' ),
@@ -61,6 +56,11 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'text', 'oer_70_to_175', __( '$70 - $175' ) )->set_width( 20 ),
             Field::make( 'text', 'oer_175_to_800', __( '$175 - $800' ) )->set_width( 20 ),
             Field::make( 'text', 'oer_800_plus', __( '$800+' ) )->set_width( 20 ),
+            Field::make( 'separator', 'crb_goodmark_separator', __( 'Goodmark FTP' ) ),
+            Field::make( 'text', 'goodmark_host', 'Goodmark Hostname' )->set_width( 33 ),
+            Field::make( 'text', 'goodmark_user', 'Goodmark Username' )->set_width( 33 ),
+            Field::make( 'text', 'goodmark_pass', 'Goodmark Password' )->set_width( 33 ),
+            Field::make( 'text', 'goodmark_export', 'Goodmark Export URL' ),
         ) );
 }
 add_action( 'carbon_fields_register_fields', 'dbi_add_plugin_settings_page' );
