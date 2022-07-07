@@ -45,17 +45,22 @@ function dbi_add_plugin_settings_page() {
         ->set_page_parent( 'options-general.php' )
         ->add_fields( array(
             Field::make( 'separator', 'crb_general_separator', __( 'General FTP' ) ),
-            Field::make( 'text', 'general_host', 'General Hostname' ),
-            Field::make( 'text', 'general_user', 'General Username' ),
-            Field::make( 'text', 'general_pass', 'General Password' ),
+            Field::make( 'text', 'general_host', 'General Hostname' )->set_width( 33 ),
+            Field::make( 'text', 'general_user', 'General Username' )->set_width( 33 ),
+            Field::make( 'text', 'general_pass', 'General Password' )->set_width( 33 ),
             Field::make( 'separator', 'crb_oer_separator', __( 'OER' ) ),
             Field::make( 'text', 'oer_export', 'OER Export URL' ),
             Field::make( 'text', 'oer_file_name', 'OER File Name' ),
-            Field::make( 'text', 'oer_0_to_15', __( '$0 - $15' ) )->set_width( 20 ),
-            Field::make( 'text', 'oer_15_to_70', __( '$15 - $70' ) )->set_width( 20 ),
-            Field::make( 'text', 'oer_70_to_175', __( '$70 - $175' ) )->set_width( 20 ),
-            Field::make( 'text', 'oer_175_to_800', __( '$175 - $800' ) )->set_width( 20 ),
-            Field::make( 'text', 'oer_800_plus', __( '$800+' ) )->set_width( 20 ),
+            Field::make( 'text', 'oer_0_to_20', __( '$0 - $20' ) )->set_width( 25 ),
+            Field::make( 'text', 'oer_20_to_50', __( '$20 - $50' ) )->set_width( 25 ),
+            Field::make( 'text', 'oer_50_to_150', __( '$50 - $150' ) )->set_width( 25 ),
+            Field::make( 'text', 'oer_150_plus', __( '$150+' ) )->set_width( 25 ),
+            Field::make( 'separator', 'crb_dynacorn_separator', __( 'Dynacorn' ) ),
+            Field::make( 'text', 'dii_0_to_15', __( '$0 - $15' ) )->set_width( 20 ),
+            Field::make( 'text', 'dii_15_to_70', __( '$15 - $70' ) )->set_width( 20 ),
+            Field::make( 'text', 'dii_70_to_175', __( '$70 - $175' ) )->set_width( 20 ),
+            Field::make( 'text', 'dii_175_to_800', __( '$175 - $800' ) )->set_width( 20 ),
+            Field::make( 'text', 'dii_800_plus', __( '$800+' ) )->set_width( 20 ),
             Field::make( 'separator', 'crb_goodmark_separator', __( 'Goodmark FTP' ) ),
             Field::make( 'text', 'goodmark_host', 'Goodmark Hostname' )->set_width( 33 ),
             Field::make( 'text', 'goodmark_user', 'Goodmark Username' )->set_width( 33 ),
@@ -268,7 +273,7 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['PartNumber', 'Cost', 'AvailableQty', 'Weight', 'Shipping Class', 'Brand', 'Quantity', 'Retail']);
+        $writer->insertOne(['PartNumber', 'Cost', 'AvailableQty', 'Weight', 'Shipping Class', 'Brand', 'Quantity', 'Retail', 'Price']);
 
         // array used to compare feed sku vs on site sku
         $current_products = [];
@@ -325,6 +330,23 @@ class RP_CLI {
 
             $retail = $record['MSRP'];
 
+            $price = $retail;
+
+            $margin_oer_0_to_120 = get_option( '_oer_0_to_20' );
+            $margin_oer_20_to_50 = get_option( '_oer_20_to_50' );
+            $margin_oer_50_to_150 = get_option( '_oer_50_to_150' );
+            $margin_oer_150_plus = get_option( '_oer_150_plus' );
+
+            if ($cost <= 20) {
+                $price = (round($cost * $margin_oer_0_to_120)) - 0.05;
+            } elseif ($cost > 20 && $cost <= 50) {
+                $price = (round($cost * $margin_oer_20_to_50)) - 0.05;
+            } elseif ($cost > 50 && $cost <= 150) {
+                $price = (round($cost * $margin_oer_50_to_150)) - 0.05;
+            } elseif ($cost > 150) {
+                $price = (round($cost * $margin_oer_150_plus)) - 0.05;
+            }
+
             $brand = $record['Brand'];
 
             $quantity = $record['AvailableQty'];
@@ -336,7 +358,7 @@ class RP_CLI {
             }
 
             // add part to new csv
-            $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class_output, $brand, $quantity, $retail]);
+            $writer->insertOne([$sku, $cost, $stock, $weight, $shipping_class_output, $brand, $quantity, $retail, $price]);
             
         }
 
