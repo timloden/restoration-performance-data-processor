@@ -52,10 +52,15 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'text', 'goodmark_host', 'Goodmark Hostname' ),
             Field::make( 'text', 'goodmark_user', 'Goodmark Username' ),
             Field::make( 'text', 'goodmark_pass', 'Goodmark Password' ),
+            Field::make( 'text', 'goodmark_export', 'Goodmark Export URL' ),
             Field::make( 'separator', 'crb_oer_separator', __( 'OER' ) ),
             Field::make( 'text', 'oer_export', 'OER Export URL' ),
             Field::make( 'text', 'oer_file_name', 'OER File Name' ),
-            Field::make( 'text', 'goodmark_export', 'Goodmark Export URL' ),
+            Field::make( 'text', 'oer_0_to_15', __( '$0 - $15' ) )->set_width( 20 ),
+            Field::make( 'text', 'oer_15_to_70', __( '$15 - $70' ) )->set_width( 20 ),
+            Field::make( 'text', 'oer_70_to_175', __( '$70 - $175' ) )->set_width( 20 ),
+            Field::make( 'text', 'oer_175_to_800', __( '$175 - $800' ) )->set_width( 20 ),
+            Field::make( 'text', 'oer_800_plus', __( '$800+' ) )->set_width( 20 ),
         ) );
 }
 add_action( 'carbon_fields_register_fields', 'dbi_add_plugin_settings_page' );
