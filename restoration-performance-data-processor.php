@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.10.0
+ * Version:         1.10.1
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -280,8 +280,9 @@ class RP_CLI {
         
         // loop through the OER feed
         foreach ($records as $offset => $record) {
-
+       
             $sku = $record['PartNumber'];
+            $sub_sub_category_name = trim($record['subsubcategoryname']);
 
             // remove asterisks from part number
             $sku = preg_replace('/[\*]+/', '', $sku);
@@ -294,6 +295,10 @@ class RP_CLI {
             
             if ($shipping_class == 'Truck' && $record['ProductHeight'] > 70) {
                 $shipping_class_output = 'heavy-freight';
+
+            } elseif ($shipping_class == 'Truck' && $sub_sub_category_name == 'Windshields') {
+                $weight = $weight;
+                $shipping_class_output = 'windshield';
 
             } elseif ($shipping_class == 'Truck') {
                 $weight = $weight;
