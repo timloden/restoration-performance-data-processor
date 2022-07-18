@@ -300,6 +300,10 @@ class RP_CLI {
                 $weight = $weight;
                 $shipping_class_output = 'windshield';
 
+            } elseif ($shipping_class == 'Truck') {
+                $weight = $weight;
+                $shipping_class_output = 'oer-freight';
+
             } elseif ($shipping_class == 'Oversize') {
                 $weight = 30;
                 $shipping_class_output = 'ground-oversized';
