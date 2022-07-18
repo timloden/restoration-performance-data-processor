@@ -94,7 +94,7 @@
   font-weight: 600; }
 
 .cf-container .cf-field__label {
-  padding-bottom: 5px;
+  padding-bottom: 6.5px;
   font-weight: 600;
   color: #23282d; }
 
@@ -359,7 +359,7 @@
 .cf-container__fields {
   display: flex;
   flex-wrap: wrap;
-  margin: -1px -1px 0 0;
+  margin: 0 -1px 0 0;
   background-color: #fff; }
   .cf-container__fields[hidden] {
     display: none; }
@@ -387,13 +387,17 @@
 .cf-container__tabs-item {
   display: flex;
   align-items: center;
-  padding: 8px 12px;
   border: 1px solid #e2e4e7;
   margin: 0 8px 0 0;
   background-color: #fbfbfc;
   font-size: 12px;
   cursor: pointer;
   transition: background-color 0.1s linear, border-color 0.1s linear; }
+  .cf-container__tabs-item button {
+    background: 0;
+    border: 0;
+    padding: 8px 12px;
+    margin: 0; }
   .cf-container__tabs-item:hover {
     background-color: #fff; }
   .cf-container__tabs-item--current {
