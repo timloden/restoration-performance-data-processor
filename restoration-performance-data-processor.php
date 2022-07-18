@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.10.0
+ * Version:         1.10.1
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -280,9 +280,7 @@ class RP_CLI {
         
         // loop through the OER feed
         foreach ($records as $offset => $record) {
-            //print_r($record);
-            echo $record['subsubcategoryname'];
-            
+       
             $sku = $record['PartNumber'];
             $sub_sub_category_name = trim($record['subsubcategoryname']);
 
