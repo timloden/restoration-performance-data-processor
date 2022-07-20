@@ -67,6 +67,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.10.2 =
+* Fixed windshield condition when length was too long
+
 = 1.10.1 =
 * Added OER windshield shipping class condition
 
