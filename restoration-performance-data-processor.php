@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.10.1
+ * Version:         1.10.2
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -293,7 +293,7 @@ class RP_CLI {
             $shipping_class = $record['ShipType'];
             $shipping_class_output = 'ground';
             
-            if ($shipping_class == 'Truck' && $record['ProductHeight'] > 70) {
+            if ($shipping_class == 'Truck' && $record['ProductHeight'] > 70 && $sub_sub_category_name != 'Windshields') {
                 $shipping_class_output = 'heavy-freight';
 
             } elseif ($shipping_class == 'Truck' && $sub_sub_category_name == 'Windshields') {

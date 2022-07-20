@@ -21,6 +21,14 @@ use ScatterPlot;
 use Spline;
 use StockPlot;
 
+/**
+ * Jpgraph is not maintained in Composer, and the version there
+ * is extremely out of date. For that reason, all unit test
+ * requiring Jpgraph are skipped. So, do not measure
+ * code coverage for this class till that is fixed.
+ *
+ * @codeCoverageIgnore
+ */
 class JpGraph implements IRenderer
 {
     private static $width = 640;
@@ -301,6 +309,8 @@ class JpGraph implements IRenderer
         $seriesPlots = [];
         if ($grouping == 'percentStacked') {
             $sumValues = $this->percentageSumCalculation($groupID, $seriesCount);
+        } else {
+            $sumValues = [];
         }
 
         //    Loop through each data series in turn
@@ -376,6 +386,8 @@ class JpGraph implements IRenderer
         $seriesPlots = [];
         if ($grouping == 'percentStacked') {
             $sumValues = $this->percentageSumCalculation($groupID, $seriesCount);
+        } else {
+            $sumValues = [];
         }
 
         //    Loop through each data series in turn
