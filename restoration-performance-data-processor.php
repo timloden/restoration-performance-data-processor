@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.10.2
+ * Version:         1.10.3
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -268,7 +268,6 @@ class RP_CLI {
 
         }
 
-
         // add our writer for output
         $writer = Writer::createFromPath($processed_file, 'w+');
 
@@ -352,7 +351,11 @@ class RP_CLI {
                 $price = (round($cost * $margin_oer_150_plus)) - 0.05;
             }
 
-            $brand = $record['Brand'];
+            $brand = trim($record['Brand']);
+
+            if ($brand == 'OER Authorized' && $cost > 250) {
+                $price = $retail - 0.04;
+            }
 
             $quantity = $record['AvailableQty'];
 
