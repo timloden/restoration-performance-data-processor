@@ -56,6 +56,7 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'text', 'oer_50_to_150', __( '$50 - $150' ) )->set_width( 25 ),
             Field::make( 'text', 'oer_150_plus', __( '$150+' ) )->set_width( 25 ),
             Field::make( 'separator', 'crb_dynacorn_separator', __( 'Dynacorn' ) ),
+            Field::make( 'text', 'dii_export', 'DII Export URL' ),
             Field::make( 'text', 'dii_0_to_15', __( '$0 - $15' ) )->set_width( 20 ),
             Field::make( 'text', 'dii_15_to_70', __( '$15 - $70' ) )->set_width( 20 ),
             Field::make( 'text', 'dii_70_to_175', __( '$70 - $175' ) )->set_width( 20 ),
@@ -114,11 +115,49 @@ class RP_CLI {
 
     // Dynacorn
 
+    public function download_existing_dynacorn() {
+        $export_url = get_option( '_dii_export' );
+        
+        if ($export_url) {
+            $uploads = wp_upload_dir();
+            $dir = $uploads['basedir'] . '/vendors/dynacorn/';
+
+            // Initialize a file URL to the variable 
+            $url = $export_url; 
+            
+            $fremote = fopen($url, 'rb');
+            if (!$fremote) {
+                WP_CLI::error( 'There was a problem opening the export url' );
+                return false;
+            }
+
+            $flocal = fopen($dir . 'dii-existing.csv', 'wb');
+            if (!$flocal) {
+                fclose($fremote);
+                WP_CLI::error( 'There was a problem opening local' );
+                return false;
+            }
+
+            while ($buffer = fread($fremote, 1024)) {
+                fwrite($flocal, $buffer);
+            }
+
+            WP_CLI::success( 'Successfully written to ' . $dir );
+        
+            fclose($flocal);
+            fclose($fremote);
+        } else {
+            WP_CLI::error( 'No export URL provided' );
+        }
+        
+    }
+
     public function download_dynacorn() {
         
         // define our files
         $local_file = 'dynacorn-temp.xls';
         $server_file = 'DynacornInventory.xls';
+        $finished_file = 'dynacorn-temp.csv';   
 
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/dynacorn/';
@@ -139,6 +178,14 @@ class RP_CLI {
             // echo "Successfully written to $local_file\n";
             WP_CLI::line( 'Downloading...' );
             WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
+
+            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($dir . $local_file );
+            $spreadsheet = $reader->load($dir . $local_file);
+
+            //print_r($spreadsheet);
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
+            $writer->save($dir . $finished_file);
+            
         } else {
             WP_CLI::error( 'There was a problem' );
         }
@@ -148,19 +195,114 @@ class RP_CLI {
     }
 
     public function process_dynacorn() {
+
+        $export_url = get_option( '_dii_export' );
         
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/dynacorn/';
-        $pre_processed_file = $dir . 'dynacorn-temp.xls';
-        $finished_file = 'dynacorn-inventory-update.csv';    
+        $pre_processed_file = $dir . 'dynacorn-temp.csv';    
+        $processed_file = $dir . 'dynacorn-processed.csv';
+
+        // get file
+        $reader = Reader::createFromPath($pre_processed_file, 'r');
+
+        // ignore header rows
+        $reader->setHeaderOffset(0);
+       
+        // get all the existing records
+        $records = $reader->getRecords();
+
+        if ($export_url) { 
+            $existing_file = $dir . 'dii-existing.csv'; 
+            $existing_reader = Reader::createFromPath($existing_file, 'r');
+            $existing_reader->setHeaderOffset(0);
+            $existing_records = $existing_reader->getRecords();
+        }
+
+        // add our writer for output
+        $writer = Writer::createFromPath($processed_file, 'w+');
+
+        // add our header
+        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice']);
+
+        // array used to compare feed sku vs on site sku
+        $current_products = [];
         
-        $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($pre_processed_file);
-        $spreadsheet = $reader->load($pre_processed_file);
+        // loop through the DII feed
+        foreach ($records as $offset => $record) {
+       
+            $sku = $record['ItemNumber'];
 
-        //print_r($spreadsheet);
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
-        $writer->save($dir . $finished_file);
+            if (!in_array($sku, $current_products)) {
 
+                 //array_push( $current_products, $sku );
+
+                 $weight = $record['Weight'];
+                 $shipping_class_output = 'ground';
+                 
+                 $cost = $record['Price'];
+ 
+                 $price = 0;
+ 
+                 $margin_dii_0_to_15 = get_option( '_dii_0_to_15' );
+                 $margin_dii_15_to_70 = get_option( '_dii_15_to_70' );
+                 $margin_dii_70_to_175 = get_option( '_dii_70_to_175' );
+                 $margin_dii_175_to_800 = get_option( '_dii_175_to_800' );
+                 $margin_dii_800_plus = get_option( '_dii_800_plus' );
+ 
+                 if ($cost <= 15) {
+                     $price = (round($cost * $margin_dii_0_to_15)) - 0.05;
+                 } elseif ($cost > 15 && $cost <= 70) {
+                     $price = (round($cost * $margin_dii_15_to_70)) - 0.05;
+                 } elseif ($cost > 70 && $cost <= 175) {
+                     $price = (round($cost * $margin_dii_70_to_175)) - 0.05;
+                 } elseif ($cost > 175 && $cost <= 800) {
+                     $price = (round($cost * $margin_dii_175_to_800)) - 0.05;
+                 } elseif ($cost > 800) {
+                     $price = (round($cost * $margin_dii_800_plus)) - 0.05;
+                 }
+ 
+                 $ca_quantity = $record['CAQuantity'];
+                 $pa_quantity = $record['PAQuantity'];
+ 
+                 $stock = 'onbackorder';
+ 
+ 
+                 // add part to new csv
+                 $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price]);
+
+            }
+
+               
+        }
+
+        $lines = array();
+
+        // open the processed csv file
+        if (($handle = fopen($processed_file, "r")) !== false) {
+            // read each line into an array
+            while (($data = fgetcsv($handle, 8192, ",")) !== false) {
+                // build a "line" from the parsed data
+                $line = join(",", $data);
+
+                // if the line has been seen, skip it
+                if (isset($lines[$line])) continue;
+
+                // save the line
+                $lines[$line] = true;
+            }
+            fclose($handle);
+        }
+
+        // build the new content-data
+        $contents = '';
+        foreach ($lines as $line => $bool) $contents .= $line . "\r\n";
+
+        $finished_file = 'dynacorn-inventory-update.csv';
+
+        // save it to a new file
+        file_put_contents("$dir/$finished_file", $contents);
+        
         WP_CLI::success( 'Successfully created ' . $finished_file );
     }
 
