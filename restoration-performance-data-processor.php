@@ -212,67 +212,80 @@ class RP_CLI {
         // get all the existing records
         $records = $reader->getRecords();
 
+        // array used to compare feed sku vs on site sku
+        $current_products = [];
+
         if ($export_url) { 
             $existing_file = $dir . 'dii-existing.csv'; 
             $existing_reader = Reader::createFromPath($existing_file, 'r');
             $existing_reader->setHeaderOffset(0);
             $existing_records = $existing_reader->getRecords();
-        }
 
+            foreach ($existing_records as $offset_record => $existing_record) {
+                $sku_temp  = trim($existing_record['Sku']);
+                array_push( $current_products, ['sku' => $sku_temp, 'shipping_class' => $existing_record['Shipping Class'], 'product_id' => $existing_record['ID']] );
+            }
+        }
         // add our writer for output
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice']);
-
-        // array used to compare feed sku vs on site sku
-        $current_products = [];
+        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice', 'product_id']);
         
         // loop through the DII feed
         foreach ($records as $offset => $record) {
        
-            $sku = $record['ItemNumber'];
+            $sku = trim($record['ItemNumber']);
+            $key = $this->array_search_multidim($current_products, 'sku', $sku);
 
-            if (!in_array($sku, $current_products)) {
-
-                 //array_push( $current_products, $sku );
-
-                 $weight = $record['Weight'];
-                 $shipping_class_output = 'ground';
+            if ($key) {
+                
+                $current_shipping_class = $current_products[$key]['shipping_class'];
+                $product_id = $current_products[$key]['product_id'];
+                $other_sku = $current_products[$key]['sku'];
+                
+                $weight = $record['Weight'];
+                $shipping_class_output = 'ground';
                  
-                 $cost = $record['Price'];
+                $cost = $record['Price'];
  
-                 $price = 0;
+                $price = 0;
  
-                 $margin_dii_0_to_15 = get_option( '_dii_0_to_15' );
-                 $margin_dii_15_to_70 = get_option( '_dii_15_to_70' );
-                 $margin_dii_70_to_175 = get_option( '_dii_70_to_175' );
-                 $margin_dii_175_to_800 = get_option( '_dii_175_to_800' );
-                 $margin_dii_800_plus = get_option( '_dii_800_plus' );
- 
-                 if ($cost <= 15) {
-                     $price = (round($cost * $margin_dii_0_to_15)) - 0.05;
-                 } elseif ($cost > 15 && $cost <= 70) {
-                     $price = (round($cost * $margin_dii_15_to_70)) - 0.05;
-                 } elseif ($cost > 70 && $cost <= 175) {
-                     $price = (round($cost * $margin_dii_70_to_175)) - 0.05;
-                 } elseif ($cost > 175 && $cost <= 800) {
-                     $price = (round($cost * $margin_dii_175_to_800)) - 0.05;
-                 } elseif ($cost > 800) {
-                     $price = (round($cost * $margin_dii_800_plus)) - 0.05;
-                 }
- 
-                 $ca_quantity = $record['CAQuantity'];
-                 $pa_quantity = $record['PAQuantity'];
- 
-                 $stock = 'onbackorder';
- 
- 
-                 // add part to new csv
-                 $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price]);
+                $margin_dii_0_to_15 = get_option( '_dii_0_to_15' );
+                $margin_dii_15_to_70 = get_option( '_dii_15_to_70' );
+                $margin_dii_70_to_175 = get_option( '_dii_70_to_175' );
+                $margin_dii_175_to_800 = get_option( '_dii_175_to_800' );
+                $margin_dii_800_plus = get_option( '_dii_800_plus' );
+
+                if ($cost <= 15) {
+                    $price = (round($cost * $margin_dii_0_to_15)) - 0.05;
+                } elseif ($cost > 15 && $cost <= 70) {
+                    $price = (round($cost * $margin_dii_15_to_70)) - 0.05;
+                } elseif ($cost > 70 && $cost <= 175) {
+                    $price = (round($cost * $margin_dii_70_to_175)) - 0.05;
+                } elseif ($cost > 175 && $cost <= 800) {
+                    $price = (round($cost * $margin_dii_175_to_800)) - 0.05;
+                } elseif ($cost > 800) {
+                    $price = (round($cost * $margin_dii_800_plus)) - 0.05;
+                }
+
+                $ca_quantity = $record['CAQuantity'];
+                $pa_quantity = $record['PAQuantity'];
+
+                $total_quantity = $ca_quantity + $pa_quantity;
+
+                $stock = 'onbackorder';
+                
+                if ($current_shipping_class == 'Dynacorn Freight' && $ca_quantity >= 1 && $pa_quantity >= 1) {
+                    $stock = 'instock';
+                } else if ($current_shipping_class != 'Dynacorn Freight' && $total_quantity > 0) {
+                    $stock = 'instock';
+                }
+
+                // add part to new csv
+                $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price, $product_id]);
 
             }
-
                
         }
 
@@ -305,6 +318,11 @@ class RP_CLI {
         
         WP_CLI::success( 'Successfully created ' . $finished_file );
     }
+
+    private function array_search_multidim($array, $column, $key){
+        return (array_search($key, array_column($array, $column)));
+    }
+    
 
     // OER
 
@@ -563,6 +581,7 @@ class RP_CLI {
         WP_CLI::success( 'Successfully created ' . $finished_file );
     }
 
+    
     // Goodmark
 
 
