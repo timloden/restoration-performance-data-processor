@@ -126,6 +126,7 @@ class RP_CLI {
             $url = $export_url; 
             
             $fremote = fopen($url, 'rb');
+            
             if (!$fremote) {
                 WP_CLI::error( 'There was a problem opening the export url' );
                 return false;
@@ -245,6 +246,12 @@ class RP_CLI {
                 $other_sku = $current_products[$key]['sku'];
                 
                 $weight = $record['Weight'];
+
+                if ($current_shipping_class == 'Ground - Dyancorn - Oversized' && $weight < 30) {
+                    $weight = 30;
+                }
+
+
                 $shipping_class_output = 'ground';
                  
                 $cost = $record['Price'];
@@ -276,9 +283,9 @@ class RP_CLI {
 
                 $stock = 'onbackorder';
                 
-                if ($current_shipping_class == 'Dynacorn Freight' && $ca_quantity >= 1 && $pa_quantity >= 1) {
+                if ($current_shipping_class == 'Dynacorn Freight' || $current_shipping_class == 'Ground - Dyancorn - Oversized' && $ca_quantity >= 1 && $pa_quantity >= 1) {
                     $stock = 'instock';
-                } else if ($current_shipping_class != 'Dynacorn Freight' && $total_quantity > 0) {
+                } else if ($current_shipping_class != 'Dynacorn Freight' && $current_shipping_class != 'Ground - Dyancorn - Oversized') {
                     $stock = 'instock';
                 }
 
