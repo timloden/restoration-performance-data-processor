@@ -67,6 +67,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.11.2 =
+* Fixed DII ground items marks as in stock when they shouldnt have been
+
 = 1.11.1 =
 * Updated DII oversized part to be in stock only if in bot warehouses and update weight to 30 if under 30 in feed
 
