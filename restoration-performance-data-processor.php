@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.11.2
+ * Version:         1.11.3
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -282,7 +282,7 @@ class RP_CLI {
 
                 $stock = 'onbackorder';
                 
-                if ($current_shipping_class == 'Dynacorn Freight' || $current_shipping_class == 'Ground - Dyancorn - Oversized' && $ca_quantity >= 1 && $pa_quantity >= 1) {
+                if ($current_shipping_class == 'Dynacorn Freight' && $ca_quantity >= 1 && $pa_quantity >= 1 || $current_shipping_class == 'Ground - Dyancorn - Oversized' && $ca_quantity >= 1 && $pa_quantity >= 1) {
                     $stock = 'instock';
                 } else if ($current_shipping_class == 'Ground - Dyancorn' && $total_quantity > 0) {
                     $stock = 'instock';

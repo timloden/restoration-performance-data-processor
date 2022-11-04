@@ -67,6 +67,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.11.3 =
+* Fixed DII freight items marks as in stock when they shouldnt have been
+
 = 1.11.2 =
 * Fixed DII ground items marks as in stock when they shouldnt have been
 
