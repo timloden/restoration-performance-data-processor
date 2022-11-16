@@ -701,7 +701,7 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['PartNumber', 'CustomerPrice', 'QuantityAvailable']);
+        $writer->insertOne(['PartNumber', 'CustomerPrice', 'QuantityAvailable', 'ListPrice', 'Cost']);
 
         // array used to compare feed sku vs on site sku
         $current_products = [];
@@ -716,6 +716,31 @@ class RP_CLI {
             
             $cost = $record['CustomerPrice'];
 
+            $retail = $record['ListPrice'];
+
+            $price = 0;
+
+            $margin_goodmark_0_to_20 = get_option( '_goodmark_0_to_20' );
+            $margin_goodmark_20_to_60 = get_option( '_goodmark_20_to_60' );
+            $margin_goodmark_60_to_130 = get_option( '_goodmark_60_to_130' );
+            $margin_goodmark_130_to_200 = get_option( '_goodmark_130_to_200' );
+            $margin_goodmark_200_to_600 = get_option( '_goodmark_200_to_600' );
+            $margin_goodmark_600_plus = get_option( '_goodmark_600_plus' );
+
+            if ($cost <= 20) {
+                $price = (round($cost * $margin_goodmark_0_to_20)) - 0.05;
+            } elseif ($cost > 20 && $cost <= 60) {
+                $price = (round($cost * $margin_goodmark_20_to_60)) - 0.05;
+            } elseif ($cost > 60 && $cost <= 130) {
+                $price = (round($cost * $margin_goodmark_60_to_130)) - 0.05;
+            } elseif ($cost > 130 && $cost <= 200) {
+                $price = (round($cost * $margin_goodmark_130_to_200)) - 0.05;
+            } elseif ($cost > 200 && $cost <= 600) {
+                $price = (round($cost * $margin_goodmark_200_to_600)) - 0.05;
+            } elseif ($cost > 600) {
+                $price = (round($cost * $margin_goodmark_600_plus)) - 0.05;
+            }
+
             $stock = 'onbackorder';
 
             if ($record['QuantityAvailable'] >= 1) {
@@ -724,7 +749,7 @@ class RP_CLI {
             
 
             // add part to new csv
-            $writer->insertOne([$sku, $cost, $stock]);
+            $writer->insertOne([$sku, $price, $stock, $retail, $cost]);
         }
         
         if ($export_url) { 
@@ -733,12 +758,12 @@ class RP_CLI {
             foreach ($existing_records as $offset => $existing_record) {
 
                 $sku = $existing_record['SKU'];
-                $cost = 0;
+                $price = 0;
                 $stock = 'outofstock';
 
                 if (!in_array($sku, $current_products)) {
                     // add part to new csv
-                    $writer->insertOne([$sku, $cost, $stock]);
+                    $writer->insertOne([$sku, $price, $stock, '0', '0']);
                 }
             }
 
