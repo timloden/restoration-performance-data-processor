@@ -67,6 +67,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.20.0 =
+* Updated goodmark to use dynamic pricing in the feed processing
+
 = 1.11.3 =
 * Fixed DII freight items marks as in stock when they shouldnt have been
 
