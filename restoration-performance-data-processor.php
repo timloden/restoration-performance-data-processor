@@ -251,15 +251,15 @@ class RP_CLI {
                 $product_id = $current_products[$key]['product_id'];
                 $other_sku = $current_products[$key]['sku'];
                 
-                $weight = round($record['Weight'], 0, PHP_ROUND_HALF_UP);
-                $length = round($record['Length'], 0, PHP_ROUND_HALF_UP);
-                $width = round($record['Width'], 0, PHP_ROUND_HALF_UP);
-                $height = round($record['Height'], 0, PHP_ROUND_HALF_UP);
+                $weight = ceil($record['Weight']);
+                $length = ceil($record['Length']);
+                $width = ceil($record['Width']);
+                $height = ceil($record['Height']);
 
                 $dim_weight = ($length * $width * $height) / 139;
 
                 if ($current_shipping_class == 'Ground - Dyancorn - Oversized' && $dim_weight > $weight) {
-                    $weight = round($dim_weight, 0, PHP_ROUND_HALF_UP);
+                    $weight = ceil($dim_weight);
                 }
                  
                 $cost = $record['Price'];
