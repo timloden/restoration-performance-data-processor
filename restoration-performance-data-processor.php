@@ -481,19 +481,20 @@ class RP_CLI {
                 $shipping_class_output = 'oer-freight';
 
             } elseif ($shipping_class == 'Oversize') {
-                $weight = 30;
+                $weight = 40;
                 $shipping_class_output = 'ground-oversized';
 
             } elseif ($shipping_class == 'Oversize-2') {
-                $weight = 70;
+                $weight = 80;
                 $shipping_class_output = 'ground-oversized';
 
             } elseif ($shipping_class == 'Oversize-3') {
-                $weight = 50;
+                $weight = 90;
                 $shipping_class_output = 'ground-oversized';
+                // OS3 with a $40 fee
 
             } elseif ($shipping_class == 'Overweight' && $weight < 90) {
-                $weight = 90;
+                $weight = 100;
                 $shipping_class_output = 'ground-oversized';
                 
             }
