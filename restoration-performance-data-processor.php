@@ -237,7 +237,7 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice', 'product_id']);
+        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice', 'product_id', 'Length', 'Width', 'Height']);
         
         // loop through the DII feed
         foreach ($records as $offset => $record) {
@@ -251,13 +251,16 @@ class RP_CLI {
                 $product_id = $current_products[$key]['product_id'];
                 $other_sku = $current_products[$key]['sku'];
                 
-                $weight = $record['Weight'];
+                $weight = round($record['Weight'], 0, PHP_ROUND_HALF_UP);
+                $length = round($record['Length'], 0, PHP_ROUND_HALF_UP);
+                $width = round($record['Width'], 0, PHP_ROUND_HALF_UP);
+                $height = round($record['Height'], 0, PHP_ROUND_HALF_UP);
 
-                if ($current_shipping_class == 'Ground - Dyancorn - Oversized' && $weight < 30) {
-                    $weight = 30;
+                $dim_weight = ($length * $width * $height) / 139;
+
+                if ($current_shipping_class == 'Ground - Dyancorn - Oversized' && $dim_weight > $weight) {
+                    $weight = round($dim_weight, 0, PHP_ROUND_HALF_UP);
                 }
-
-                $shipping_class_output = 'ground';
                  
                 $cost = $record['Price'];
  
@@ -295,7 +298,7 @@ class RP_CLI {
                 }
 
                 // add part to new csv
-                $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price, $product_id]);
+                $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price, $product_id, $length, $width, $height]);
 
             }
                
