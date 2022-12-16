@@ -51,10 +51,12 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'separator', 'crb_oer_separator', __( 'OER' ) ),
             Field::make( 'text', 'oer_export', 'OER Export URL' ),
             Field::make( 'text', 'oer_file_name', 'OER File Name' ),
-            Field::make( 'text', 'oer_0_to_20', __( '$0 - $20' ) )->set_width( 25 ),
-            Field::make( 'text', 'oer_20_to_50', __( '$20 - $50' ) )->set_width( 25 ),
-            Field::make( 'text', 'oer_50_to_150', __( '$50 - $150' ) )->set_width( 25 ),
-            Field::make( 'text', 'oer_150_plus', __( '$150+' ) )->set_width( 25 ),
+            Field::make( 'text', 'oer_0_to_20', __( '$0 - $20' ) )->set_width( 16 ),
+            Field::make( 'text', 'oer_20_to_50', __( '$20 - $50' ) )->set_width( 16 ),
+            Field::make( 'text', 'oer_50_to_75', __( '$50 - $75' ) )->set_width( 16 ),
+            Field::make( 'text', 'oer_75_to_150', __( '$75 - $150' ) )->set_width( 16 ),
+            Field::make( 'text', 'oer_150_to_250', __( '$150 - $250' ) )->set_width( 16 ),
+            Field::make( 'text', 'oer_250_plus', __( '$250+' ) )->set_width( 16 ),
             Field::make( 'separator', 'crb_dynacorn_separator', __( 'Dynacorn' ) ),
             Field::make( 'text', 'dii_export', 'DII Export URL' ),
             Field::make( 'text', 'dii_0_to_15', __( '$0 - $15' ) )->set_width( 20 ),
@@ -513,17 +515,23 @@ class RP_CLI {
 
             $margin_oer_0_to_120 = get_option( '_oer_0_to_20' );
             $margin_oer_20_to_50 = get_option( '_oer_20_to_50' );
-            $margin_oer_50_to_150 = get_option( '_oer_50_to_150' );
-            $margin_oer_150_plus = get_option( '_oer_150_plus' );
+            $margin_oer_50_to_75 = get_option( '_oer_50_to_75' );
+            $margin_oer_75_to_150 = get_option( '_oer_75_to_150' );
+            $margin_oer_150_to_250 = get_option( '_oer_150_to_250' );
+            $margin_oer_250_plus = get_option( '_oer_250_plus' );
 
             if ($cost <= 20) {
                 $price = (round($cost * $margin_oer_0_to_120)) - 0.05;
             } elseif ($cost > 20 && $cost <= 50) {
                 $price = (round($cost * $margin_oer_20_to_50)) - 0.05;
-            } elseif ($cost > 50 && $cost <= 150) {
-                $price = (round($cost * $margin_oer_50_to_150)) - 0.05;
-            } elseif ($cost > 150) {
-                $price = (round($cost * $margin_oer_150_plus)) - 0.05;
+            } elseif ($cost > 50 && $cost <= 75) {
+                $price = (round($cost * $margin_oer_50_to_75)) - 0.05;
+            } elseif ($cost > 75 && $cost <= 150) {
+                $price = (round($cost * $margin_oer_75_to_150)) - 0.05;
+            } elseif ($cost > 150 && $cost <= 250) {
+                $price = (round($cost * $margin_oer_150_to_250)) - 0.05;
+            } elseif ($cost > 250) {
+                $price = (round($cost * $margin_oer_250_plus)) - 0.05;
             }
 
             $brand = trim($record['Brand']);
