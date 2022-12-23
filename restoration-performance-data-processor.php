@@ -239,7 +239,7 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice', 'product_id', 'Length', 'Width', 'Height']);
+        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice', 'product_id', 'Length', 'Width', 'Height', 'ShippingClass']);
         
         // loop through the DII feed
         foreach ($records as $offset => $record) {
@@ -299,8 +299,12 @@ class RP_CLI {
                     $stock = 'instock';
                 }
 
+                if ($current_shipping_class == 'Dynacorn Freight' && $length >= 88) {
+                    $current_shipping_class = 'heavy-freight-oversized';
+                }
+
                 // add part to new csv
-                $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price, $product_id, $length, $width, $height]);
+                $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price, $product_id, $length, $width, $height, $current_shipping_class]);
 
             }
                
