@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.13.0
+ * Version:         1.13.1
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -239,7 +239,7 @@ class RP_CLI {
         $writer = Writer::createFromPath($processed_file, 'w+');
 
         // add our header
-        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice', 'product_id', 'Length', 'Width', 'Height']);
+        $writer->insertOne(['ItemNumber', 'Price', 'CAQuantity', 'PAQuantity', 'Weight', 'StockStatus', 'SalePrice', 'product_id', 'Length', 'Width', 'Height', 'ShippingClass']);
         
         // loop through the DII feed
         foreach ($records as $offset => $record) {
@@ -299,8 +299,12 @@ class RP_CLI {
                     $stock = 'instock';
                 }
 
+                if ($current_shipping_class == 'Dynacorn Freight' && $length >= 88) {
+                    $current_shipping_class = 'heavy-freight-oversized';
+                }
+
                 // add part to new csv
-                $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price, $product_id, $length, $width, $height]);
+                $writer->insertOne([$sku, $cost, $ca_quantity, $pa_quantity, $weight, $stock, $price, $product_id, $length, $width, $height, $current_shipping_class]);
 
             }
                
@@ -459,6 +463,7 @@ class RP_CLI {
        
             $sku = $record['PartNumber'];
             $sub_sub_category_name = trim($record['subsubcategoryname']);
+            $length = $record['ProductHeight'];
 
             // remove asterisks from part number
             $sku = preg_replace('/[\*]+/', '', $sku);
@@ -469,7 +474,10 @@ class RP_CLI {
             $shipping_class = $record['ShipType'];
             $shipping_class_output = 'ground';
             
-            if ($shipping_class == 'Truck' && $record['ProductHeight'] > 70 && $sub_sub_category_name != 'Windshields') {
+            if ($shipping_class == 'Truck' && $record['ProductHeight'] > 88) {
+                $shipping_class_output = 'heavy-freight-oversized';
+                
+            } elseif ($shipping_class == 'Truck' && $record['ProductHeight'] > 70 && $sub_sub_category_name != 'Windshields') {
                 $shipping_class_output = 'heavy-freight';
 
             } elseif ($shipping_class == 'Truck' && $sub_sub_category_name == 'Windshields') {
