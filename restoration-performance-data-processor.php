@@ -463,6 +463,7 @@ class RP_CLI {
        
             $sku = $record['PartNumber'];
             $sub_sub_category_name = trim($record['subsubcategoryname']);
+            $length = $record['ProductHeight'];
 
             // remove asterisks from part number
             $sku = preg_replace('/[\*]+/', '', $sku);
@@ -473,7 +474,10 @@ class RP_CLI {
             $shipping_class = $record['ShipType'];
             $shipping_class_output = 'ground';
             
-            if ($shipping_class == 'Truck' && $record['ProductHeight'] > 70 && $sub_sub_category_name != 'Windshields') {
+            if ($shipping_class == 'Truck' && $record['ProductHeight'] > 88) {
+                $shipping_class_output = 'heavy-freight-oversized';
+                
+            } elseif ($shipping_class == 'Truck' && $record['ProductHeight'] > 70 && $sub_sub_category_name != 'Windshields') {
                 $shipping_class_output = 'heavy-freight';
 
             } elseif ($shipping_class == 'Truck' && $sub_sub_category_name == 'Windshields') {
