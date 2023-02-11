@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.13.2
+ * Version:         1.13.1
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -475,14 +475,22 @@ class RP_CLI {
             $shipping_class_output = 'ground';
             
             if ($shipping_class == 'Truck' && $record['ProductHeight'] > 88) {
+                // extra extra long freight items
                 $shipping_class_output = 'heavy-freight-oversized';
                 
             } elseif ($shipping_class == 'Truck' && $record['ProductHeight'] > 75 && $sub_sub_category_name != 'Windshields') {
+                // extra long freight items
                 $shipping_class_output = 'heavy-freight';
 
             } elseif ($shipping_class == 'Truck' && $sub_sub_category_name == 'Windshields') {
+                // windshields
                 $weight = $weight;
                 $shipping_class_output = 'windshield';
+
+            } elseif ($shipping_class == 'Standard' && $weight > 30) {
+                // ground items that would burn us on being heavy and qualifying to $7.50 shipping
+                $weight = $weight;
+                $shipping_class_output = 'ground-oversized';
 
             } elseif ($shipping_class == 'Truck') {
                 $weight = $weight;

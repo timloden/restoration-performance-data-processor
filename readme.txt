@@ -67,6 +67,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.13.3 =
+* Added oversize protection for ground items over 30 lbs
+
 = 1.13.2 =
 * Updated oer heavy over sized to be 75 inches
 
