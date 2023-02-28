@@ -515,7 +515,9 @@ class RP_CLI {
                 
             }
 
-            if ($weight == 0) {
+            if ($weight == "") {
+                $weight = 40;
+            } elseif ($weight == 0) {
                 $weight = 1;
             }
 
