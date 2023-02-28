@@ -33,6 +33,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
+use phpseclib3\Net\SFTP;
+
 // Admin Page
 
 function dbi_load_carbon_fields() {
@@ -398,24 +400,17 @@ class RP_CLI {
         $ftp_user_name = get_option( '_general_user' );
         $ftp_user_pass = get_option( '_general_pass' );
 
-        // set up basic connection
-        $conn_id = ftp_connect($ftp_server);
+        try {
+            $sftp = new SFTP($ftp_server);
+            $sftp->login($ftp_user_name, $ftp_user_pass);
 
-        // login with username and password
-        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
-        ftp_pasv($conn_id, true);
+            $sftp->get($server_file, $dir . $local_file);
 
-        // try to download $server_file and save to $local_file
-        if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
-            // echo "Successfully written to $local_file\n";
-            WP_CLI::line( 'Downloading...' );
             WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
-        } else {
-            WP_CLI::error( 'There was a problem' );
         }
-
-        // close the connection
-        ftp_close($conn_id);
+        catch (Exception $e) {
+            WP_CLI::error( $e->getMessage() );
+        }
     }
     
     public function process_oer() {

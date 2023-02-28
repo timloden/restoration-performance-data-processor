@@ -1,10 +1,9 @@
 {
-    "require-dev": {
-    },
     "require": {
         "league/csv": "^9.6",
         "htmlburger/carbon-fields": "^3.1",
         "kub-at/php-simple-html-dom-parser": "^1.9",
-        "phpoffice/phpspreadsheet": "^1.15"
+        "phpoffice/phpspreadsheet": "^1.15",
+        "phpseclib/phpseclib": "~3.0"
     }
 }
