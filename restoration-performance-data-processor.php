@@ -177,32 +177,26 @@ class RP_CLI {
         $ftp_user_name = get_option( '_general_user' );
         $ftp_user_pass = get_option( '_general_pass' );
 
-        // set up basic connection
-        $conn_id = ftp_connect($ftp_server);
+        try {
+            $sftp = new SFTP($ftp_server);
+            $sftp->login($ftp_user_name, $ftp_user_pass);
 
-        // login with username and password
-        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
-        ftp_pasv($conn_id, true);
+            $sftp->get($server_file, $dir . $local_file);
 
-        // try to download $server_file and save to $local_file
-        if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
-            // echo "Successfully written to $local_file\n";
-            WP_CLI::line( 'Downloading...' );
-            WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
+            WP_CLI::success( 'Successfully saved xls to ' . $dir . $local_file );
 
             $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($dir . $local_file );
             $spreadsheet = $reader->load($dir . $local_file);
 
-            //print_r($spreadsheet);
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
             $writer->save($dir . $finished_file);
-            
-        } else {
-            WP_CLI::error( 'There was a problem' );
-        }
 
-        // close the connection
-        ftp_close($conn_id);
+            WP_CLI::success( 'Successfully saved csv to ' . $dir . $finished_file );
+
+        }
+        catch (Exception $e) {
+            WP_CLI::error( $e->getMessage() );
+        }
     }
 
     public function process_dynacorn() {
