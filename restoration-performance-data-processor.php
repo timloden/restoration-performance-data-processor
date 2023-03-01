@@ -504,8 +504,9 @@ class RP_CLI {
                 
             }
 
-            if ($weight == "") {
+            if (!$weight && !$record['ProductHeight']) {
                 $weight = 40;
+                $shipping_class_output = 'ground-oversized';
             } elseif ($weight == 0) {
                 $weight = 1;
             }
