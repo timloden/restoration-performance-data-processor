@@ -34,6 +34,7 @@ use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
 use phpseclib3\Net\SFTP;
+use phpseclib3\Net\SFTP\Stream;
 
 // Admin Page
 
@@ -383,30 +384,39 @@ class RP_CLI {
     }
 
 	public function download_oer() {
+        // TODO move this back to SFTP once OER is uploading file to new server
         
-        // define our files
-        $local_file = 'oer-temp.csv';
-        //$server_file = 'RPC.csv';
-        $server_file = get_option( '_oer_file_name' );
+       // define our files
+       $local_file = 'oer-temp.csv';
+       //$server_file = 'RPC.csv';
+       $server_file = get_option( '_oer_file_name' );
 
-        $uploads = wp_upload_dir();
-        $dir = $uploads['basedir'] . '/vendors/oer/';
+       $uploads = wp_upload_dir();
+       $dir = $uploads['basedir'] . '/vendors/oer/';
 
-        $ftp_server = get_option( '_general_host' );
-        $ftp_user_name = get_option( '_general_user' );
-        $ftp_user_pass = get_option( '_general_pass' );
+       $ftp_server = get_option( '_oer_host' );
+       $ftp_user_name = get_option( '_oer_user' );
+       $ftp_user_pass = get_option( '_oer_pass' );
 
-        try {
-            $sftp = new SFTP($ftp_server);
-            $sftp->login($ftp_user_name, $ftp_user_pass);
+       // set up basic connection
+       $conn_id = ftp_connect($ftp_server);
 
-            $sftp->get($server_file, $dir . $local_file);
+       // login with username and password
+       $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+       ftp_pasv($conn_id, true);
 
-            WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
-        }
-        catch (Exception $e) {
-            WP_CLI::error( $e->getMessage() );
-        }
+       // try to download $server_file and save to $local_file
+       if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
+           // echo "Successfully written to $local_file\n";
+           WP_CLI::line( 'Downloading...' );
+           WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
+       } else {
+           WP_CLI::error( 'There was a problem' );
+       }
+
+       // close the connection
+       ftp_close($conn_id);
+
     }
     
     public function process_oer() {
