@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.13.5
+ * Version:         1.14.0
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -33,6 +33,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use Carbon_Fields\Container;
 use Carbon_Fields\Field;
 
+use phpseclib3\Net\SFTP;
+use phpseclib3\Net\SFTP\Stream;
+
 // Admin Page
 
 function dbi_load_carbon_fields() {
@@ -44,11 +47,10 @@ function dbi_add_plugin_settings_page() {
     Container::make( 'theme_options', __( 'RP Data Sources' ) )
         ->set_page_parent( 'options-general.php' )
         ->add_fields( array(
-            Field::make( 'separator', 'crb_general_separator', __( 'General FTP' ) ),
-            Field::make( 'text', 'general_host', 'General Hostname' )->set_width( 33 ),
-            Field::make( 'text', 'general_user', 'General Username' )->set_width( 33 ),
-            Field::make( 'text', 'general_pass', 'General Password' )->set_width( 33 ),
             Field::make( 'separator', 'crb_oer_separator', __( 'OER' ) ),
+            Field::make( 'text', 'oer_host', 'OER Hostname' )->set_width( 33 ),
+            Field::make( 'text', 'oer_user', 'OER Username' )->set_width( 33 ),
+            Field::make( 'text', 'oer_pass', 'OER Password' )->set_width( 33 ),
             Field::make( 'text', 'oer_export', 'OER Export URL' ),
             Field::make( 'text', 'oer_file_name', 'OER File Name' ),
             Field::make( 'text', 'oer_0_to_20', __( '$0 - $20' ) )->set_width( 16 ),
@@ -58,6 +60,9 @@ function dbi_add_plugin_settings_page() {
             Field::make( 'text', 'oer_150_to_250', __( '$150 - $250' ) )->set_width( 16 ),
             Field::make( 'text', 'oer_250_plus', __( '$250+' ) )->set_width( 16 ),
             Field::make( 'separator', 'crb_dynacorn_separator', __( 'Dynacorn' ) ),
+            Field::make( 'text', 'dii_host', 'Dynacorn Hostname' )->set_width( 33 ),
+            Field::make( 'text', 'dii_user', 'Dynacorn Username' )->set_width( 33 ),
+            Field::make( 'text', 'dii_pass', 'Dynacorn Password' )->set_width( 33 ),
             Field::make( 'text', 'dii_export', 'DII Export URL' ),
             Field::make( 'text', 'dii_0_to_15', __( '$0 - $15' ) )->set_width( 20 ),
             Field::make( 'text', 'dii_15_to_70', __( '$15 - $70' ) )->set_width( 20 ),
@@ -171,36 +176,30 @@ class RP_CLI {
         $uploads = wp_upload_dir();
         $dir = $uploads['basedir'] . '/vendors/dynacorn/';
 
-        $ftp_server = get_option( '_general_host' );
-        $ftp_user_name = get_option( '_general_user' );
-        $ftp_user_pass = get_option( '_general_pass' );
+        $ftp_server = get_option( '_dii_host' );
+        $ftp_user_name = get_option( '_dii_user' );
+        $ftp_user_pass = get_option( '_dii_pass' );
 
-        // set up basic connection
-        $conn_id = ftp_connect($ftp_server);
+        try {
+            $sftp = new SFTP($ftp_server);
+            $sftp->login($ftp_user_name, $ftp_user_pass);
 
-        // login with username and password
-        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
-        ftp_pasv($conn_id, true);
+            $sftp->get($server_file, $dir . $local_file);
 
-        // try to download $server_file and save to $local_file
-        if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
-            // echo "Successfully written to $local_file\n";
-            WP_CLI::line( 'Downloading...' );
-            WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
+            WP_CLI::success( 'Successfully saved xls to ' . $dir . $local_file );
 
             $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReaderForFile($dir . $local_file );
             $spreadsheet = $reader->load($dir . $local_file);
 
-            //print_r($spreadsheet);
             $writer = new \PhpOffice\PhpSpreadsheet\Writer\Csv($spreadsheet);
             $writer->save($dir . $finished_file);
-            
-        } else {
-            WP_CLI::error( 'There was a problem' );
-        }
 
-        // close the connection
-        ftp_close($conn_id);
+            WP_CLI::success( 'Successfully saved csv to ' . $dir . $finished_file );
+
+        }
+        catch (Exception $e) {
+            WP_CLI::error( $e->getMessage() );
+        }
     }
 
     public function process_dynacorn() {
@@ -385,37 +384,39 @@ class RP_CLI {
     }
 
 	public function download_oer() {
+        // TODO move this back to SFTP once OER is uploading file to new server
         
-        // define our files
-        $local_file = 'oer-temp.csv';
-        //$server_file = 'RPC.csv';
-        $server_file = get_option( '_oer_file_name' );
+       // define our files
+       $local_file = 'oer-temp.csv';
+       //$server_file = 'RPC.csv';
+       $server_file = get_option( '_oer_file_name' );
 
-        $uploads = wp_upload_dir();
-        $dir = $uploads['basedir'] . '/vendors/oer/';
+       $uploads = wp_upload_dir();
+       $dir = $uploads['basedir'] . '/vendors/oer/';
 
-        $ftp_server = get_option( '_general_host' );
-        $ftp_user_name = get_option( '_general_user' );
-        $ftp_user_pass = get_option( '_general_pass' );
+       $ftp_server = get_option( '_oer_host' );
+       $ftp_user_name = get_option( '_oer_user' );
+       $ftp_user_pass = get_option( '_oer_pass' );
 
-        // set up basic connection
-        $conn_id = ftp_connect($ftp_server);
+       // set up basic connection
+       $conn_id = ftp_connect($ftp_server);
 
-        // login with username and password
-        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
-        ftp_pasv($conn_id, true);
+       // login with username and password
+       $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+       ftp_pasv($conn_id, true);
 
-        // try to download $server_file and save to $local_file
-        if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
-            // echo "Successfully written to $local_file\n";
-            WP_CLI::line( 'Downloading...' );
-            WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
-        } else {
-            WP_CLI::error( 'There was a problem' );
-        }
+       // try to download $server_file and save to $local_file
+       if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
+           // echo "Successfully written to $local_file\n";
+           WP_CLI::line( 'Downloading...' );
+           WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
+       } else {
+           WP_CLI::error( 'There was a problem' );
+       }
 
-        // close the connection
-        ftp_close($conn_id);
+       // close the connection
+       ftp_close($conn_id);
+
     }
     
     public function process_oer() {
@@ -678,24 +679,17 @@ class RP_CLI {
         $ftp_user_name = get_option( '_goodmark_user' );
         $ftp_user_pass = get_option( '_goodmark_pass' );
 
-        // set up basic connection
-        $conn_id = ftp_connect($ftp_server);
+        try {
+            $sftp = new SFTP($ftp_server);
+            $sftp->login($ftp_user_name, $ftp_user_pass);
 
-        // login with username and password
-        $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
-        ftp_pasv($conn_id, true);
-        
-        // try to download $server_file and save to $local_file
-        if (ftp_get($conn_id, $dir.$local_file, $server_file, FTP_BINARY)) {
-            // echo "Successfully written to $local_file\n";
-            WP_CLI::line( 'Downloading...' );
+            $sftp->get($server_file, $dir . $local_file);
+
             WP_CLI::success( 'Successfully written to ' . $dir . $local_file );
-        } else {
-            WP_CLI::error( 'There was a problem' );
         }
-
-        // close the connection
-        ftp_close($conn_id);
+        catch (Exception $e) {
+            WP_CLI::error( $e->getMessage() );
+        }
     }
 
     public function process_goodmark() {
