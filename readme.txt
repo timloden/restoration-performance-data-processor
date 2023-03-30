@@ -67,6 +67,9 @@ directory take precedence. For example, `/assets/screenshot-1.png` would win ove
 2. This is the second screen shot
 
 == Changelog ==
+= 1.15.0=
+* Moved OER download back to SFTP
+
 = 1.13.4=
 * Version bump 
 
