@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.15.1
+ * Version:         1.15.2
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -264,9 +264,9 @@ class RP_CLI {
 
                 $dim_weight = ($length * $width * $height) / 139;
 
-                if ($current_shipping_class == 'Ground - Dyancorn - Oversized' && $dim_weight > $weight) {
-                    $weight = ceil($dim_weight);
-                }
+                // if ($current_shipping_class == 'Ground - Dyancorn - Oversized' && $dim_weight > $weight) {
+                //     $weight = ceil($dim_weight);
+                // }
                  
                 $cost = $record['Price'];
  
