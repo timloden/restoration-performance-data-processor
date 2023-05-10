@@ -7,7 +7,7 @@
  * Author URI:      https://timloden.com
  * Text Domain:     restoration-performance-data-processor
  * Domain Path:     /languages
- * Version:         1.15.2
+ * Version:         1.15.3
  *
  * @package         Restoration_Performance_Data_Processor
  */
@@ -565,6 +565,10 @@ class RP_CLI {
 
             if ($brand == 'OER Authorized' && $cost > 250) {
                 $price = $retail - 0.04;
+            }
+
+            if ($shipping_class == 'Truck' && $sub_sub_category_name == 'Windshields') {
+                $price = (round($cost * 1.9)) - 0.05;
             }
 
             $quantity = $record['AvailableQty'];
